@@ -1,0 +1,12 @@
+{
+  "name": "a3-eliehess",
+  "version": "1.0",
+  "description": "CS 4241 Assignment 3",
+  "author": "Elie Hess",
+  "scripts": {
+    "start": "node server.improved.js"
+  },
+  "dependencies": {
+    "mime": "^2.4.4"
+  }
+}
