@@ -96,7 +96,7 @@
 
         <p id="loginErrorBox">Incorrect username or password</p>
 
-        <button id="loginButton">Login</button>
+        <button id="submitLoginButton">Submit Login</button>
       </form>
     </div>
 
@@ -221,10 +221,40 @@
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreenButton").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
-  }
+  };
 
-  const login = function() {
+  const submitLogin = function() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const eBox = document.getElementById("loginErrorBox");
 
+    if (username === "" || password === "") {
+      eBox.innerHTML = "Please enter both a username and a password"
+      eBox.style.display = "block"
+    }
+
+    if (validateUsername(username, password))
+      eBox.innerHTML = "Valid"
+    else
+      eBox.innerHTML = "Invalid"
+
+    eBox.style.display = "block"
+    return false;
+  };
+
+  const validateUsername = async function(username, password) {
+    const resp = await fetch("/getdata", {
+      method: "GET"
+    });
+    const data = await resp.json();
+    const memberList = data.data;
+
+    for (let i = 0; i < memberList.length; i++) {
+      const member = memberList[i];
+      console.log(member.username + " vs " + username + ", " + member.password + " vs " + password)
+      if (member.username === username && member.password === password) return true;
+    }
+    return false;
   }
 
   const clear = function() {
@@ -315,17 +345,18 @@
     newApplicationButton.onclick = showApplication;
     const loginScreenButton = document.getElementById("loginScreenButton");
     loginScreenButton.onclick = showLogin;
-    const loginButton = document.getElementById("loginButton");
-    loginButton.onclick = login;
+    const submitLoginButton = document.getElementById("submitLoginButton");
+    submitLoginButton.onclick = submitLogin;
 
-    document.getElementById("application").style.display = "block";
+    document.getElementById("application").style.display = "none";
     document.getElementById("updateApplication").style.display = "none";
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("memberTableDiv").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("loginScreenButton").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("loginErrorBox").style.display = "none";
+    document.getElementById("loginScreen").style.display = "block";
   };
 </script>
 

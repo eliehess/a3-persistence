@@ -1,23 +1,59 @@
-const low = require('lowdb')
-var express = require('express')
-const FileSync = require('lowdb/adapters/FileSync')
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-var app = express();
-const uuidv4 = require('uuid/v4');
+const low = require('lowdb'),
+  express = require('express'),
+  passport = require('passport'),
+  Strategy = require('passport-local').Strategy,
+  FileSync = require('lowdb/adapters/FileSync'),
+  adapter = new FileSync('db.json'),
+  db = low(adapter),
+  app = express(),
+  uuidv4 = require('uuid/v4');
+
+passport.use(new Strategy(
+  function(username, password, cb) {
+    db.users.findByUsername(username, function(err, user) {
+      if (err) {
+        return cb(err);
+      }
+      if (!user) {
+        return cb(null, false);
+      }
+      if (user.password != password) {
+        return cb(null, false);
+      }
+      return cb(null, user);
+    });
+  }));
+
+passport.serializeUser(function(user, cb) {
+  cb(null, user.id);
+});
+
+passport.deserializeUser(function(id, cb) {
+  db.users.findById(id, function(err, user) {
+    if (err) {
+      return cb(err);
+    }
+    cb(null, user);
+  });
+});
+
 
 db.defaults({
   members: [{
       "firstname": "Luke",
       "lastname": "Skywalker",
       "major": "Lightsaber Construction",
-      "uuid": "f5701299-05f8-4ca0-a904-fa6fdfd3718c"
+      "uuid": "f5701299-05f8-4ca0-a904-fa6fdfd3718c",
+      "username": "Luke",
+      "password": "Skywalker"
     },
     {
       "firstname": "Obi-Wan",
       "lastname": "Kenobi",
       "major": "Taking the High Ground",
-      "uuid": "524dee4e-b72e-49e2-adf2-e4907db45fda"
+      "uuid": "524dee4e-b72e-49e2-adf2-e4907db45fda",
+      "username": "Obi-Wan",
+      "password": "Kenobi"
     }
   ]
 }).write();
@@ -44,7 +80,7 @@ const handleGet = function(request, response) {
   if (request.url === "/") {
     sendFile(response, "public/index.html")
   } else if (request.url === "/getdata") {
-    sendData(response, db.get('members').value() /*appdata*/);
+    sendData(response, db.get('members').value() /*appdata*/ );
   } else {
     sendFile(response, filename);
   }
@@ -87,7 +123,9 @@ const handlePost = function(request, response) {
           "major": updatedData.major,
           "uuid": updatedData.uuid
         };
-        db.get('members').remove({uuid: updatedData.uuid}).write()
+        db.get('members').remove({
+          uuid: updatedData.uuid
+        }).write()
 
         db.get('members').push(updatedEntry).write();
 
@@ -99,7 +137,9 @@ const handlePost = function(request, response) {
 
       case "/delete":
         const entryToDelete = JSON.parse(dataString);
-        db.get('members').remove({uuid: entryToDelete.uuid}).write()
+        db.get('members').remove({
+          uuid: entryToDelete.uuid
+        }).write()
         response.writeHead(200, "OK", {
           "Content-Type": "text/plain"
         });
