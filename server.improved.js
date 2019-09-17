@@ -1,6 +1,5 @@
 const low = require('lowdb')
 var express = require('express')
-//const adapter = new LocalStorage('db')
 const FileSync = require('lowdb/adapters/FileSync')
 const adapter = new FileSync('db.json')
 const db = low(adapter)
@@ -28,51 +27,9 @@ app.use(express)
 const http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
+  //mime = require("mime-types")
   dir = "public/",
   port = 3000;
-
-/*app.get("/", function(request, response) {
-response.sendFile(__dirname + '/public/index.html');
-});)
-
-app.get("/users", function(request, response) {
-  var dbUsers = [];
-  var users = db.get('users').value() // Find all users in the collection
-  users.forEach(function(user) {
-    dbUsers.push([user.firstname, user.lastname, user.major]); // adds their info to the dbUsers value
-  });
-  response.send(dbUsers); // sends dbUsers back to the page
-});
-
-app.post("/users", function (request, response) {
-  db.get('users')
-    .push({ firstname: request.query.firstname, lastname: request.query.lastname, major: request.query.major })
-    .write()
-  console.log("New user inserted in the database");
-  response.sendStatus(200);
-});
-
-var listener = app.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
-});*/
-
-/*const appdata = [{
-    "firstname": "Luke",
-    "lastname": "Skywalker",
-    "major": "Lightsaber Construction",
-    "year": 1596,
-    "graduated": "Yes",
-    "velocity": "42 m/s"
-  },
-  {
-    "firstname": "Obi-Wan",
-    "lastname": "Kenobi",
-    "major": "Taking the High Ground",
-    "year": 1554,
-    "graduated": "Yes",
-    "velocity": "11 m/s"
-  }
-];*/
 
 const server = http.createServer(function(request, response) {
   if (request.method === "GET") {
@@ -104,18 +61,6 @@ const handlePost = function(request, response) {
     switch (request.url) {
       case "/submit":
         const data = JSON.parse(dataString);
-
-        /*const graduated = parseInt(data.year) < 2019 ? "Yes" : "No";
-
-        const newMember = {
-          "firstname": data.firstname,
-          "lastname": data.lastname,
-          "major": data.major,
-          "year": data.year,
-          "graduated": graduated,
-          "velocity": data.velocity
-        };
-        appdata.push(newMember);*/
         const newUUID = uuidv4();
 
         const newMember = {
@@ -135,21 +80,17 @@ const handlePost = function(request, response) {
         break;
       case "/update":
         const updatedData = JSON.parse(dataString);
-        //const uuid = updatedData.uuid;
 
         const updatedEntry = {
           "firstname": updatedData.firstname,
           "lastname": updatedData.lastname,
           "major": updatedData.major,
           "uuid": updatedData.uuid
-          //Pass UUID back and forth between client and server?
         };
         db.get('members').remove({uuid: updatedData.uuid}).write()
-        //db.get('members').pull(updatedData.uuid).write();
 
         db.get('members').push(updatedEntry).write();
 
-        //appdata.splice(updatedData.index, 1, updatedEntry);
         response.writeHead(200, "OK", {
           "Content-Type": "text/plain"
         });
@@ -158,14 +99,8 @@ const handlePost = function(request, response) {
 
       case "/delete":
         const entryToDelete = JSON.parse(dataString);
-        //const index = entryToDelete.memberNum
-        //console.log("index to remove: " + index)
 
-        //db.get('members').pullAt(db, index)
-
-        //db.get('members').pull(entryToDelete.uuid).write();
         db.get('members').remove({uuid: entryToDelete.uuid}).write()
-        //appdata.splice(entryToDelete.memberNum, 1);
         response.writeHead(200, "OK", {
           "Content-Type": "text/plain"
         });
