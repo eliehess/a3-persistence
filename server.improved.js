@@ -1,6 +1,5 @@
 const low = require('lowdb')
 var express = require('express')
-//const adapter = new LocalStorage('db')
 const FileSync = require('lowdb/adapters/FileSync')
 const adapter = new FileSync('db.json')
 const db = low(adapter)
@@ -28,6 +27,7 @@ app.use(express)
 const http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
+  //mime = require("mime-types")
   dir = "public/",
   port = 3000;
 
