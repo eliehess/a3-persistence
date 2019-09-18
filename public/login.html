@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Magic: the Gathering Club</title>
+  <meta charset="utf-8">
+  <link href="/css/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+  <div id="loginScreen">
+    <h2>Login</h2>
+    <form action="">
+      <div class="input">
+        <label for="username" class="label">Username</label>
+        <input type="text" id="username">
+        <label for="password" class="label">Password</label>
+        <input type="text" id="password">
+      </div>
+
+      <p id="loginErrorBox">Incorrect username or password</p>
+
+      <button id="submitLoginButton">Submit Login</button>
+    </form>
+  </div>
+
+
+</body>
+
+<script>
+  const submitLogin = function() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const eBox = document.getElementById("loginErrorBox");
+
+    if (username === "" || password === "") {
+      eBox.innerHTML = "Please enter both a username and a password"
+      eBox.style.display = "block"
+    }
+
+    if (validateUsername(username, password))
+      eBox.innerHTML = "Valid"
+    else
+      eBox.innerHTML = "Invalid"
+
+    eBox.style.display = "block"
+    return false;
+  };
+
+  const validateUsername = async function(username, password) {
+    const resp = await fetch("/getdata", {
+      method: "GET"
+    });
+    const data = await resp.json();
+    const memberList = data.data;
+
+    for (let i = 0; i < memberList.length; i++) {
+      const member = memberList[i];
+      console.log(member.username + " vs " + username + ", " + member.password + " vs " + password)
+      if (member.username === username && member.password === password) return true;
+    }
+    return false;
+  }
+
+  window.onload = function() {
+    const submitLoginButton = document.getElementById("submitLoginButton");
+    submitLoginButton.onclick = submitLogin;
+
+    document.getElementById("loginErrorBox").style.display = "none";
+    document.getElementById("loginScreen").style.display = "block";
+  };
+</script>
+
+</html>

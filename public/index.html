@@ -12,7 +12,7 @@
 
   <main>
     <button id="switchModeButton">View Members</button>
-    <button id="loginScreenButton">Login</button>
+    <button id="loginScreenButton" onclick="location.href='/login.html';">Login</button>
 
     <div id="application">
       <h2>Stop! Who would cross the Bridge of Death must answer me these questions <del>three</del> five, 'ere the other side they see.</h2>
@@ -122,6 +122,7 @@
     fetch("/submit", {
       method: "POST",
       body
+      headers: { 'Content-Type': 'application/json' }
     }).then(function(response) {
       document.getElementById("confirmation").style.display = "flex";
       document.getElementById("application").style.display = "none";
@@ -150,6 +151,7 @@
     fetch("/update", {
       method: "POST",
       body
+      headers: { 'Content-Type': 'application/json' }
     }).then(function() {
       showMemberTable();
     });
@@ -173,6 +175,7 @@
     fetch("/delete", {
       method: "POST",
       body
+      headers: { 'Content-Type': 'application/json' }
     });
     getMembers();
   };
@@ -180,6 +183,7 @@
   const getMembers = async function() {
     const resp = await fetch("/getdata", {
       method: "GET"
+      headers: { 'Content-Type': 'application/json' }
     });
     const data = await resp.json();
     const memberList = data.data;
@@ -211,6 +215,35 @@
     return false;
   };
 
+  const submitLogin = function() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const eBox = document.getElementById("loginErrorBox");
+
+    if (username === "" || password === "") {
+      eBox.innerHTML = "Please enter both a username and a password"
+      eBox.style.display = "block"
+    } else {
+      eBox.style.display = "none"
+    }
+
+    let loginData = {
+      username: username,
+      password: password
+    }
+
+    body = JSON.stringify(loginData)
+
+    fetch('/login', {
+      method: 'POST',
+      body
+      headers: { 'Content-Type': 'application/json' }
+    }).then(function(response) {
+      console.log(response)
+    })
+    return false;
+  };
+
   const hideAll = function() {
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("memberTableDiv").style.display = "none";
@@ -222,40 +255,6 @@
     document.getElementById("loginScreenButton").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
   };
-
-  const submitLogin = function() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    const eBox = document.getElementById("loginErrorBox");
-
-    if (username === "" || password === "") {
-      eBox.innerHTML = "Please enter both a username and a password"
-      eBox.style.display = "block"
-    }
-
-    if (validateUsername(username, password))
-      eBox.innerHTML = "Valid"
-    else
-      eBox.innerHTML = "Invalid"
-
-    eBox.style.display = "block"
-    return false;
-  };
-
-  const validateUsername = async function(username, password) {
-    const resp = await fetch("/getdata", {
-      method: "GET"
-    });
-    const data = await resp.json();
-    const memberList = data.data;
-
-    for (let i = 0; i < memberList.length; i++) {
-      const member = memberList[i];
-      console.log(member.username + " vs " + username + ", " + member.password + " vs " + password)
-      if (member.username === username && member.password === password) return true;
-    }
-    return false;
-  }
 
   const clear = function() {
     document.getElementById("firstname").value = "";
@@ -273,6 +272,7 @@
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreenButton").style.display = "none";
+
   };
 
   const showApplication = function() {
@@ -355,8 +355,8 @@
     document.getElementById("loginScreenButton").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginErrorBox").style.display = "none";
     document.getElementById("loginScreen").style.display = "block";
+    document.getElementById("loginErrorBox").style.display = "none";
   };
 </script>
 
