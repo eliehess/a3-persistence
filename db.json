@@ -17,5 +17,12 @@
       "lastname": "Hess",
       "username": "user",
       "password": "pass"
+    },
+    {
+      "firstname": "Admin",
+      "lastname": "Admin",
+      "username": "admin",
+      "password": "admin"
     }
+  ]
 }

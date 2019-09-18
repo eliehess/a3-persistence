@@ -6,7 +6,6 @@ const low = require('lowdb'),
   flash = require("connect-flash"),
   Local = require('passport-local').Strategy,
   FileSync = require('lowdb/adapters/FileSync'),
-  uuidv4 = require('uuid/v4'),
   http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
@@ -65,13 +64,13 @@ const myLocalStrategy = function(username, password, done) {
   }
 
 }
-passport.use(new Local({
-  usernameField: "username",
-  passwordField: "password"
-}, function(username, password, done) {
+passport.use(new Local(function(username, password, done) {
   console.log('here');
+
   const user = db.get("members").find(__user => __user.username === username);
+
   console.log("made it here")
+
   if (user === undefined) {
     console.log("user not found")
     return done(null, false, {
@@ -109,15 +108,15 @@ passport.deserializeUser((username, done) => {
   }
 });
 
-app.use(session({
+/*app.use(session({
   secret: 'fifteen potatoes',
   resave: false,
   saveUninitialized: false
-}));
+}));*/
 
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
+//app.use(passport.initialize());
+//app.use(passport.session());
+//app.use(flash());
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
   console.log('user: ', req.user)
@@ -164,7 +163,7 @@ app.post('/update', function(req, res) {
     };
     db.get('members').remove({
       username: updatedData.username
-    }).write()
+    }).write();
 
     db.get('members').push(updatedEntry).write();
 

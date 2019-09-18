@@ -36,12 +36,12 @@
         <div class="input">
           <label for="password" class="label">
             What would you like your password to be?</label>
-          <input type="text" id="password">
+          <input type="password" id="password">
         </div>
         <div class="input">
           <label for="passwordVerify" class="label">
             What was your password again?</label>
-          <input type="text" id="passwordVerify">
+          <input type="password" id="passwordVerify">
         </div>
 
         <p id="errorBox">Please respond to all questions and ensure you have entered a valid year</p>
@@ -67,24 +67,19 @@
         </div>
         <div class="input">
           <label for="updateUsername" class="label">
-            What would you like your username to be (read-only)?</label>
+            Your username (read-only):</label>
           <input type="text" id="updateUsername" readonly>
         </div>
         <div class="input">
           <label for="updatePassword" class="label">
             What would you like your password to be?</label>
-          <input type="text" id="updatePassword">
+          <input type="password" id="updatePassword">
         </div>
         <div class="input">
           <label for="updatePasswordVerify" class="label">
             What was your password again?</label>
-          <input type="text" id="updatePasswordVerify">
+          <input type="password" id="updatePasswordVerify">
         </div>
-        <!--div class="input">
-          <label for="uuid" class=label>
-            UUID (read-only): </label>
-          <input type="text" id="uuid" readonly>
-        </div-->
 
         <p id="updateErrorBox">Please respond to all questions</p>
 
@@ -261,7 +256,7 @@
   };
 
   const submitLogin = function() {
-    console.log("submitLogin")
+    //console.log("submitLogin")
     const username = document.getElementById("usernameLogin").value;
     const password = document.getElementById("passwordLogin").value;
     const eBox = document.getElementById("loginErrorBox");
@@ -278,7 +273,7 @@
       username: username,
       password: password
     }
-    console.log("username: " + username + ", password: " + password)
+    //console.log("username: " + username + ", password: " + password)
     body = JSON.stringify(loginData)
 
     fetch('/login', {
@@ -374,8 +369,7 @@
     document.getElementById("updatefirstName").value = member.firstname;
     document.getElementById("updatelastName").value = member.lastname;
     document.getElementById("updateUsername").value = member.username;
-    document.getElementById("updatePassword").value = member.password;
-    //document.getElementById("uuid").value = member.uuid;
+    //document.getElementById("updatePassword").value = member.password;
     return false;
   };
 
