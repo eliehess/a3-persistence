@@ -67,8 +67,8 @@
         </div>
         <div class="input">
           <label for="updateUsername" class="label">
-            What would you like your username to be?</label>
-          <input type="text" id="updateUsername">
+            What would you like your username to be (read-only)?</label>
+          <input type="text" id="updateUsername" readonly>
         </div>
         <div class="input">
           <label for="updatePassword" class="label">
@@ -204,11 +204,6 @@
 
   const deleteMember = function(index) {
     const member = JSON.parse(decodeURIComponent(document.getElementById(`deleteMemberButton-${index}`).dataset.string));
-    /*const id = member.uuid;
-    console.log("Deleting ID: " + id);
-    const memberDelete = {
-      uuid: id
-    };*/
     const deleteUsername = member.username;
     console.log("Deleting User: " + deleteUsername);
     const memberDelete = {
