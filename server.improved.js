@@ -1,19 +1,20 @@
 const low = require('lowdb'),
   express = require('express'),
+  compression = require('compression'),
   session = require('express-session'),
   passport = require('passport'),
+  flash = require("connect-flash"),
   Local = require('passport-local').Strategy,
   FileSync = require('lowdb/adapters/FileSync'),
-  adapter = new FileSync('db.json'),
-  db = low(adapter),
-  app = express(),
   uuidv4 = require('uuid/v4'),
   http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
   cookieParser = require('cookie-parser'),
   morgan = require('morgan'),
-  //mime = require("mime-types"),
+  adapter = new FileSync('db.json'),
+  db = low(adapter),
+  app = express(),
   dir = "public/",
   port = 3000;
 
@@ -24,6 +25,7 @@ const low = require('lowdb'),
 });*/
 
 app.use(express.static('public'));
+app.use(compression());
 //app.use(bodyParser.json());
 app.use(morgan('tiny'));
 app.use(cookieParser());
@@ -32,8 +34,8 @@ app.use(function(err, req, res, next) {
   res.status(500).send('Bad thing happened');
 });
 
-passport.use(new Local(function(username, password, cb) {
-  db.users.findByUsername(username, function(err, user) {
+/*passport.use(new Local(function(username, password, cb) {
+  db.get("members").findByUsername(username, function(err, user) {
     if (err) {
       return cb(err);
     }
@@ -45,13 +47,64 @@ passport.use(new Local(function(username, password, cb) {
     }
     return cb(null, user);
   });
+}));*/
+
+const myLocalStrategy = function(username, password, done) {
+  console.log('here');
+  const user = db.get("members").find(__user => __user.username === username);
+  console.log("made it here")
+  if (user === undefined) {
+    console.log("user not found")
+    return done(null, false, {
+      message: "user not found"
+    });
+  } else if (user.password === password) {
+    console.log("user found")
+    return done(null, {
+      username,
+      password
+    })
+  } else {
+    console.log("incorrect password")
+    return done(null, false, {
+      message: "incorrect password"
+    });
+  }
+
+}
+passport.use(new Local({
+  usernameField: "username",
+  passwordField: "password"
+}, function(username, password, done) {
+  console.log('here');
+  const user = db.get("members").find(__user => __user.username === username);
+  console.log("made it here")
+  if (user === undefined) {
+    console.log("user not found")
+    return done(null, false, {
+      message: "user not found"
+    });
+  } else if (user.password === password) {
+    console.log("user found")
+    return done(null, {
+      username,
+      password
+    })
+  } else {
+    console.log("incorrect password")
+    return done(null, false, {
+      message: "incorrect password"
+    });
+  }
+
 }));
+
 passport.initialize();
 
 passport.serializeUser((user, done) => done(null, user.username))
 
 passport.deserializeUser((username, done) => {
-  const user = db.find(u => u.username === username)
+  const user = db.get("members").find(u => u.username === username)
   //console.log('deserializing:', user)
 
   if (user !== undefined) {
@@ -71,10 +124,17 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
-/*app.post('/test', function (req, res) {
-    console.log('authenticate with cookie?', req.user)
-    res.json({ status: 'success' })
+app.post('/login', passport.authenticate('local'), function(req, res) {
+  console.log('user: ', req.user)
+  res.json({
+    status: true
+  })
+})
+
+/*app.post('/login', function(req, res) {
+  console.log("hi there");
 })*/
 
 app.get('/', function(req, res) {
@@ -90,6 +150,7 @@ app.get('/getdata', function(req, res) {
   res.write(JSON.stringify({
     data: db.get('members').value()
   }));
+  res.flush();
   res.end();
 });
 
@@ -106,8 +167,8 @@ app.post('/update', function(req, res) {
     const updatedEntry = {
       "firstname": updatedData.firstname,
       "lastname": updatedData.lastname,
-      "major": updatedData.major,
-      "uuid": updatedData.uuid
+      "username": updatedData.username,
+      "password": updatedData.password
     };
     db.get('members').remove({
       uuid: updatedData.uuid
@@ -131,13 +192,12 @@ app.post('/submit', function(req, res) {
 
   req.on("end", function() {
     const data = JSON.parse(dataString);
-    const newUUID = uuidv4();
 
     const newMember = {
       "firstname": data.firstname,
       "lastname": data.lastname,
-      "major": data.major,
-      "uuid": newUUID
+      "username": data.username,
+      "password": data.password
     }
 
     db.get('members').push(newMember).write()
@@ -159,7 +219,8 @@ app.post('/delete', function(req, res) {
   req.on("end", function() {
     const entryToDelete = JSON.parse(dataString);
     db.get('members').remove({
-      uuid: entryToDelete.uuid
+      //uuid: entryToDelete.uuid
+      username: entryToDelete.username
     }).write()
     res.writeHead(200, "OK", {
       "Content-Type": "text/plain"
@@ -167,40 +228,6 @@ app.post('/delete', function(req, res) {
     res.end();
   })
 });
-
-app.get('/login', function(req, res, next) {
-  passport.authenticate('local', function(err, user, info) {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.redirect('/login');
-    }
-    req.logIn(user, function(err) {
-      if (err) {
-        return next(err);
-      }
-      return res.redirect('/users/' + user.username);
-    });
-  })(req, res, next);
-});
-
-/*app.post(
-  '/login',
-  passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/login.html'
-  }),
-  function(req, res) {
-    console.log("Login successful")
-    console.log(req.user)
-    res.json({
-      status: true
-    })
-  }
-);*/
-
-
 
 /*db.defaults({
   members: [{
