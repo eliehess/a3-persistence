@@ -1,3 +1,4 @@
+<!--Watch this, will ya? https://www.youtube.com/watch?v=oqu3i41DmZQ-->
 <!doctype html>
 <html lang="en">
 
@@ -5,14 +6,17 @@
   <title>Magic: the Gathering Club</title>
   <meta charset="utf-8">
   <link href="/css/style.css" rel="stylesheet" type="text/css">
+  <link href="/css/tachyons.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-  <h1>WPI Magic: the Gathering Club Application</h1>
+  <h1>WPI Magic: the Gathering Club</h1>
+  <h3 id="loggedin"></h3>
 
   <main>
+    <button id="backtologinButton">Log in</button>
+    <button id="logoutButton">Log Out</button>
     <button id="switchModeButton">View Members</button>
-    <button id="loginScreenButton">Login</button>
 
     <div id="application">
       <h2>Stop! Who would cross the Bridge of Death must answer me these questions <del>three</del> five, 'ere the other side they see.</h2>
@@ -28,9 +32,19 @@
           <input type="text" id="lastname">
         </div>
         <div class="input">
-          <label for="major" class="label">
-            What is your major?</label>
-          <input type="text" id="major">
+          <label for="username" class="label">
+            What would you like your username to be?</label>
+          <input type="text" id="username">
+        </div>
+        <div class="input">
+          <label for="password" class="label">
+            What would you like your password to be?</label>
+          <input type="password" id="password">
+        </div>
+        <div class="input">
+          <label for="passwordVerify" class="label">
+            What was your password again?</label>
+          <input type="password" id="passwordVerify">
         </div>
 
         <p id="errorBox">Please respond to all questions and ensure you have entered a valid year</p>
@@ -55,17 +69,22 @@
           <input type="text" id="updatelastName">
         </div>
         <div class="input">
-          <label for="updateMajor" class="label">
-            What is your major?</label>
-          <input type="text" id="updateMajor">
+          <label for="updateUsername" class="label">
+            Your username (read-only):</label>
+          <input type="text" id="updateUsername" readonly>
         </div>
         <div class="input">
-          <label for="uuid" class=label>
-            UUID (read-only): </label>
-          <input type="text" id="uuid" readonly>
+          <label for="updatePassword" class="label">
+            What would you like your password to be?</label>
+          <input type="password" id="updatePassword">
+        </div>
+        <div class="input">
+          <label for="updatePasswordVerify" class="label">
+            What was your password again?</label>
+          <input type="password" id="updatePasswordVerify">
         </div>
 
-        <p id="updateErrorBox">Please respond to all questions and ensure you have entered a valid year</p>
+        <p id="updateErrorBox">Please respond to all questions</p>
 
         <div id="updateButtons">
           <button id="cancelButton">Cancel Update</button>
@@ -85,43 +104,76 @@
     </div>
 
     <div id="loginScreen">
-      <h2>Login</h2>
+      <h2>Please log in</h2>
+      <br>
+      <button id="signupButton">Sign Up</button>
       <form action="">
         <div class="input">
-          <label for="username" class="label">Username</label>
-          <input type="text" id="username">
-          <label for="password" class="label">Password</label>
-          <input type="text" id="password">
+          <label for="usernameLogin" class="label">Username</label>
+          <input type="text" id="usernameLogin">
+          <label for="passwordLogin" class="label">Password</label>
+          <input type="password" id="passwordLogin">
         </div>
 
         <p id="loginErrorBox">Incorrect username or password</p>
-
-        <button id="loginButton">Login</button>
       </form>
+      <button id="submitLoginButton">Submit Login</button>
     </div>
 
   </main>
 </body>
 
 <script>
-  const addMember = function(e) {
+  const addMember = async function(e) {
     e.preventDefault();
+
+    if (document.getElementById("password").value !=
+      document.getElementById("passwordVerify").value) {
+      document.getElementById("errorBox").style.display = "block";
+      document.getElementById("errorBox").innerHTML = "Please ensure that your passwords match";
+      return false;
+    }
 
     const newMember = {
       firstname: document.getElementById("firstname").value,
       lastname: document.getElementById("lastname").value,
-      major: document.getElementById("major").value
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
     };
-    if (!validate(newMember.firstname, newMember.lastname, newMember.major)) {
+
+    if (newMember.firstname === "" || newMember.lastname === "" ||
+      newMember.username === "" || newMember.password === "") {
       document.getElementById("errorBox").style.display = "block";
+      document.getElementById("errorBox").innerHTML = "Please answer all questions";
       return false;
     }
     document.getElementById("errorBox").style.display = "none";
 
+    const resp = await fetch("/getdata", {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await resp.json();
+    const memberList = data.data;
+
+    for (let i = 0; i < memberList.length; i++) {
+      const member = memberList[i];
+      if (member.username === newMember.username) {
+        document.getElementById("errorBox").style.display = "block";
+        document.getElementById("errorBox").innerHTML = "That username already exists";
+        return false;
+      }
+    }
+
     const body = JSON.stringify(newMember);
     fetch("/submit", {
       method: "POST",
-      body
+      body,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(function(response) {
       document.getElementById("confirmation").style.display = "flex";
       document.getElementById("application").style.display = "none";
@@ -133,15 +185,24 @@
   const updateMember = function(e) {
     e.preventDefault();
 
+    if (document.getElementById("updatePassword").value !=
+      document.getElementById("updatePasswordVerify").value) {
+      document.getElementById("updateErrorBox").style.display = "block";
+      document.getElementById("updateErrorBox").innerHTML = "Please ensure that your passwords match";
+      return false;
+    }
+
     const updatedMember = {
       firstname: document.getElementById("updatefirstName").value,
       lastname: document.getElementById("updatelastName").value,
-      major: document.getElementById("updateMajor").value,
-      uuid: document.getElementById("uuid").value
+      username: document.getElementById("updateUsername").value,
+      password: document.getElementById("updatePassword").value
     };
 
-    if (!validate(updatedMember.firstname, updatedMember.lastname, updatedMember.major)) {
+    if (updatedMember.firstname === "" || updatedMember.lastname === "" ||
+      updatedMember.username === "" || updatedMember.password === "") {
       document.getElementById("updateErrorBox").style.display = "block";
+      document.getElementById("updateErrorBox").innerHTML = "Please answer all questions";
       return false;
     }
     document.getElementById("updateErrorBox").style.display = "none";
@@ -149,37 +210,40 @@
     const body = JSON.stringify(updatedMember);
     fetch("/update", {
       method: "POST",
-      body
+      body,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(function() {
       showMemberTable();
     });
     return false;
   };
 
-  const validate = function(fName, lName, major) {
-    if (fName === "" || lName === "" || major === "") return false;
-    else return true;
-  }
-
   const deleteMember = function(index) {
     const member = JSON.parse(decodeURIComponent(document.getElementById(`deleteMemberButton-${index}`).dataset.string));
-    const id = member.uuid;
-    console.log("Deleting ID: " + id);
-    const memberNum = {
-      uuid: id
+    const deleteUsername = member.username;
+    const memberDelete = {
+      username: deleteUsername
     };
 
-    const body = JSON.stringify(memberNum);
+    const body = JSON.stringify(memberDelete);
     fetch("/delete", {
       method: "POST",
-      body
+      body,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     getMembers();
   };
 
   const getMembers = async function() {
     const resp = await fetch("/getdata", {
-      method: "GET"
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     const data = await resp.json();
     const memberList = data.data;
@@ -188,7 +252,8 @@
     table.innerHTML = "<tr>\n" +
       "<th>First Name</th>\n" +
       "<th>Last Name</th>\n" +
-      "<th>Major</th>\n" +
+      "<th>Username</th>\n" +
+      "<th>Password</th>\n" +
       "<th>Update</th>\n" +
       "<th>Delete</th>\n" +
       "</tr>";
@@ -199,7 +264,8 @@
       table.innerHTML += "<tr>\n" +
         `<td> ${member.firstname} </td>\n` +
         `<td> ${member.lastname} </td>\n` +
-        `<td> ${member.major} </td>\n` +
+        `<td> ${member.username} </td>\n` +
+        `<td> ${member.password} </td>\n` +
         `<td> <button id="updateMemberButton-${i}" style="font-size: 1vw"` +
         ` onclick="showUpdate(${i})" data-string=` +
         encodeURIComponent(str) + `>Update</button> </td>\n` +
@@ -211,6 +277,51 @@
     return false;
   };
 
+  const submitLogin = function() {
+    const username = document.getElementById("usernameLogin").value;
+    const password = document.getElementById("passwordLogin").value;
+    const eBox = document.getElementById("loginErrorBox");
+
+    if (username === "" || password === "") {
+      eBox.innerHTML = "Please enter both a username and a password"
+      eBox.style.display = "block"
+      return;
+    } else {
+      eBox.style.display = "none"
+    }
+
+    let loginData = {
+      username: username,
+      password: password
+    }
+    body = JSON.stringify(loginData)
+
+    fetch('/login', {
+      method: 'POST',
+      body,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function(response) {
+      if (response.status === 401) {
+        eBox.style.display = "block"
+        eBox.innerHTML = "Incorrect username or password"
+      } else if (response.status === 200) {
+        success(username);
+      } else {
+        console.log("Unexpected response " + response.status);
+      }
+    })
+  };
+
+  const success = function(username) {
+    document.getElementById("loggedin").innerHTML = "Logged in as " + username;
+    document.getElementById("usernameLogin").innerHTML = "";
+    document.getElementById("passwordLogin").innerHTML = "";
+    hideAll();
+    showApplication();
+  }
+
   const hideAll = function() {
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("memberTableDiv").style.display = "none";
@@ -219,22 +330,29 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "none";
+    document.getElementById("logoutButton").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
-  }
-
-  const login = function() {
-
-  }
+    document.getElementById("signupButton").style.display = "none";
+    document.getElementById("backtologinButton").style.display = "none";
+  };
 
   const clear = function() {
     document.getElementById("firstname").value = "";
     document.getElementById("lastname").value = "";
-    document.getElementById("major").value = "";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("updatefirstName").value = "";
+    document.getElementById("updatelastName").value = "";
+    document.getElementById("updateUsername").value = "";
+    document.getElementById("updatePassword").value = "";
+    document.getElementById("usernameLogin").value = "";
+    document.getElementById("passwordLogin").value = "";
     return false;
   };
 
   const showLogin = function() {
+    hideAll();
+    clear();
     document.getElementById("loginScreen").style.display = "block";
     document.getElementById("memberTableDiv").style.display = "none";
     document.getElementById("application").style.display = "none";
@@ -242,8 +360,16 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "none";
+    document.getElementById("logoutButton").style.display = "none";
+    document.getElementById("loggedin").innerHTML = "";
+    document.getElementById("signupButton").style.display = "block";
   };
+
+  const signup = function() {
+    hideAll();
+    document.getElementById("application").style.display = "block";
+    document.getElementById("backtologinButton").style.display = "block";
+  }
 
   const showApplication = function() {
     document.getElementById("errorBox").style.display = "none";
@@ -253,7 +379,7 @@
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("application").style.display = "block";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
 
     document.getElementById("switchModeButton").innerHTML = "View Members";
     document.getElementById("switchModeButton").onclick = showMemberTable;
@@ -270,7 +396,7 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
 
     document.getElementById("switchModeButton").innerHTML = "New Application";
     document.getElementById("switchModeButton").onclick = showApplication;
@@ -286,7 +412,7 @@
     document.getElementById("updateApplication").style.display = "block";
     document.getElementById("application").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreen").style.display = "none";
@@ -295,8 +421,7 @@
     document.getElementById("updateButton").dataset.index = index;
     document.getElementById("updatefirstName").value = member.firstname;
     document.getElementById("updatelastName").value = member.lastname;
-    document.getElementById("updateMajor").value = member.major;
-    document.getElementById("uuid").value = member.uuid;
+    document.getElementById("updateUsername").value = member.username;
     return false;
   };
 
@@ -306,26 +431,33 @@
     let switchModeButton = document.getElementById("switchModeButton");
     switchModeButton.innerHTML = "View Members";
     switchModeButton.onclick = showMemberTable;
-    switchModeButton.style.display = "block";
     const cancelButton = document.getElementById("cancelButton");
     cancelButton.onclick = showMemberTable;
     const updateButton = document.getElementById("updateButton");
     updateButton.onclick = updateMember;
     const newApplicationButton = document.getElementById("newApplicationButton");
     newApplicationButton.onclick = showApplication;
-    const loginScreenButton = document.getElementById("loginScreenButton");
-    loginScreenButton.onclick = showLogin;
-    const loginButton = document.getElementById("loginButton");
-    loginButton.onclick = login;
+    const logoutButton = document.getElementById("logoutButton");
+    logoutButton.onclick = showLogin;
+    const submitLoginButton = document.getElementById("submitLoginButton");
+    submitLoginButton.onclick = submitLogin;
+    const signupButton = document.getElementById("signupButton");
+    signupButton.onclick = signup;
+    const backtologinButton = document.getElementById("backtologinButton");
+    backtologinButton.onclick = showLogin;
 
-    document.getElementById("application").style.display = "block";
+    hideAll();
+
+    document.getElementById("application").style.display = "none";
     document.getElementById("updateApplication").style.display = "none";
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("memberTableDiv").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("loginScreen").style.display = "block";
+    document.getElementById("loginErrorBox").style.display = "none";
+    signupButton.style.display = "block";
   };
 </script>
 

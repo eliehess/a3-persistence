@@ -94,6 +94,14 @@ table button {
   font-size: 1.75vw;
 }
 
+[type="password"] {
+  width: 95%;
+  padding: 7px;
+  margin-top: 10px;
+  font-size: 8px;
+  font-size: 1.75vw;
+}
+
 #errorBox {
   display: none;
   color: white;

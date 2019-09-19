@@ -1,16 +1,22 @@
 {
   "members": [
     {
-      "firstname": "Obi-Wan",
-      "lastname": "Kenobi",
-      "major": "Taking the High Ground",
-      "uuid": "524dee4e-b72e-49e2-adf2-e4907db45fda"
+      "firstname": "Admin",
+      "lastname": "istrator",
+      "username": "admin",
+      "password": "admin"
     },
     {
       "firstname": "Luke",
       "lastname": "Skywalker",
-      "major": "Lightsaber Construction",
-      "uuid": "f5701299-05f8-4ca0-a904-fa6fdfd3718c"
+      "username": "May",
+      "password": "the Force be with you"
+    },
+    {
+      "firstname": "Obi-Wan",
+      "lastname": "Kenobi",
+      "username": "I have",
+      "password": "the high ground"
     }
   ]
 }
