@@ -1,5 +1,7 @@
 ## WPI Magic: the Gathering Club Website
 
+NOTE: Importing my project to Glitch from GitHub results in an endless loading screen, so I had to manually copy-and-paste all of my code into Glitch. This, unfortunately, resulted in Glitch being unable to load the module 'lowdb', which is rather vital to the project. If clicking the link below results in errors of some kind, please download my repo, cd into it from the terminal, run "node server.improved.js", and navigate to "localhost:3000" from your web browser. Apologies for any inconvenience.
+
 http://a3-eliehess.glitch.me
 
 Use admin/admin for username and password
