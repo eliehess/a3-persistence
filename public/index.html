@@ -9,11 +9,12 @@
 </head>
 
 <body>
-  <h1>WPI Magic: the Gathering Club Application</h1>
+  <h1>WPI Magic: the Gathering Club</h1>
+  <h1 id="loggedin"></h1>
 
   <main>
     <button id="switchModeButton">View Members</button>
-    <button id="loginScreenButton">Login</button>
+    <button id="logoutButton">Log Out</button>
 
     <div id="application">
       <h2>Stop! Who would cross the Bridge of Death must answer me these questions <del>three</del> five, 'ere the other side they see.</h2>
@@ -101,7 +102,7 @@
     </div>
 
     <div id="loginScreen">
-      <h2>Login</h2>
+      <h2>Please log in</h2>
       <form action="">
         <div class="input">
           <label for="usernameLogin" class="label">Username</label>
@@ -175,6 +176,8 @@
       username: document.getElementById("updateUsername").value,
       password: document.getElementById("updatePassword").value
     };
+
+    console.log(updatedMember)
 
     if (updatedMember.firstname === "" || updatedMember.lastname === "" ||
       updatedMember.username === "" || updatedMember.password === "") {
@@ -282,9 +285,26 @@
       headers: {
         'Content-Type': 'application/json'
       }
-    }) /*then(res => res.json()).*/ .then(console.log);
+    }).then(function(response) {
+      if(response.status === 401) {
+        eBox.style.display = "block"
+        eBox.innerHTML = "Incorrect username or password"
+      } else if (response.status === 200) {
+        success(username);
+      }
+    })
+    //}).then(console.log);
     //return false;
   };
+
+  const success = function(username) {
+    console.log("Logged in as " + username)
+    document.getElementById("loggedin").innerHTML = "Logged in as " + username;
+    document.getElementById("usernameLogin").innerHTML = "";
+    document.getElementById("passwordLogin").innerHTML = "";
+    hideAll();
+    showApplication();
+  }
 
   const hideAll = function() {
     document.getElementById("loginScreen").style.display = "none";
@@ -294,7 +314,7 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "none";
+    document.getElementById("logoutButton").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
   };
 
@@ -314,8 +334,8 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "none";
-
+    document.getElementById("logoutButton").style.display = "none";
+    document.getElementById("loggedin").innerHTML = "";
   };
 
   const showApplication = function() {
@@ -326,7 +346,7 @@
     document.getElementById("loginScreen").style.display = "none";
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("application").style.display = "block";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
 
     document.getElementById("switchModeButton").innerHTML = "View Members";
     document.getElementById("switchModeButton").onclick = showMemberTable;
@@ -343,7 +363,7 @@
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
 
     document.getElementById("switchModeButton").innerHTML = "New Application";
     document.getElementById("switchModeButton").onclick = showApplication;
@@ -359,7 +379,7 @@
     document.getElementById("updateApplication").style.display = "block";
     document.getElementById("application").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "block";
+    document.getElementById("logoutButton").style.display = "block";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreen").style.display = "none";
@@ -385,18 +405,18 @@
     updateButton.onclick = updateMember;
     const newApplicationButton = document.getElementById("newApplicationButton");
     newApplicationButton.onclick = showApplication;
-    const loginScreenButton = document.getElementById("loginScreenButton");
-    loginScreenButton.onclick = showLogin;
+    const logoutButton = document.getElementById("logoutButton");
+    logoutButton.onclick = showLogin;
     const submitLoginButton = document.getElementById("submitLoginButton");
     submitLoginButton.onclick = submitLogin;
 
-    switchModeButton.style.display = "block";
+    switchModeButton.style.display = "none";
 
     document.getElementById("application").style.display = "none";
     document.getElementById("updateApplication").style.display = "none";
     document.getElementById("confirmation").style.display = "none";
     document.getElementById("memberTableDiv").style.display = "none";
-    document.getElementById("loginScreenButton").style.display = "none";
+    document.getElementById("logoutButton").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreen").style.display = "block";

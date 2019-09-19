@@ -9,6 +9,7 @@ const low = require('lowdb'),
   http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
+  bodyParser = require('body-parser'),
   cookieParser = require('cookie-parser'),
   morgan = require('morgan'),
   adapter = new FileSync('db.json'),
@@ -19,6 +20,7 @@ const low = require('lowdb'),
 
 app.use(express.static('public'));
 app.use(compression());
+app.use(bodyParser.json());
 app.use(morgan('tiny'));
 app.use(cookieParser());
 app.use(function(err, req, res, next) {
@@ -26,50 +28,10 @@ app.use(function(err, req, res, next) {
   res.status(500).send('Bad thing happened');
 });
 
-/*passport.use(new Local(function(username, password, cb) {
-  db.get("members").findByUsername(username, function(err, user) {
-    if (err) {
-      return cb(err);
-    }
-    if (!user) {
-      return cb(null, false);
-    }
-    if (user.password != password) {
-      return cb(null, false);
-    }
-    return cb(null, user);
-  });
-}));*/
-
-const myLocalStrategy = function(username, password, done) {
-  console.log('here');
-  const user = db.get("members").find(__user => __user.username === username);
-  console.log("made it here")
-  if (user === undefined) {
-    console.log("user not found")
-    return done(null, false, {
-      message: "user not found"
-    });
-  } else if (user.password === password) {
-    console.log("user found")
-    return done(null, {
-      username,
-      password
-    })
-  } else {
-    console.log("incorrect password")
-    return done(null, false, {
-      message: "incorrect password"
-    });
-  }
-
-}
 passport.use(new Local(function(username, password, done) {
-  console.log('here');
-
-  const user = db.get("members").find(__user => __user.username === username);
-
-  console.log("made it here")
+  const user = db.get("members").find({
+    "username": username
+  }).value();
 
   if (user === undefined) {
     console.log("user not found")
@@ -108,17 +70,20 @@ passport.deserializeUser((username, done) => {
   }
 });
 
-/*app.use(session({
+app.use(session({
   secret: 'fifteen potatoes',
   resave: false,
   saveUninitialized: false
-}));*/
+}));
 
-//app.use(passport.initialize());
-//app.use(passport.session());
-//app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
-app.post('/login', passport.authenticate('local'), function(req, res) {
+app.post('/login', passport.authenticate('local', {
+  failureFlash: true,
+  successFlash: true
+}), function(req, res) {
   console.log('user: ', req.user)
   res.json({
     status: true
@@ -146,15 +111,36 @@ app.get('/getdata', function(req, res) {
 });
 
 app.post('/update', function(req, res) {
-  let dataString = "";
-
+  /*let dataString = "";
+  console.log("update")
   req.on("data", function(data) {
     dataString += data
+    console.log(data)
   });
+  console.log("body: " + req.body)
+  console.log("username: " + req.body.username)*/
+  //const updatedData = req.body;
+  const updatedEntry = {
+    "firstname": req.body.firstname,
+    "lastname": req.body.lastname,
+    "username": req.body.username,
+    "password": req.body.password
+  };
+  console.log(updatedEntry)
 
-  req.on("end", function() {
-    const updatedData = JSON.parse(dataString);
+  db.get('members').remove({
+    username: updatedEntry.username
+  }).write();
 
+  db.get('members').push(updatedEntry).write();
+
+  res.writeHead(200, "OK", {
+    "Content-Type": "text/plain"
+  });
+  res.end();
+
+  /*req.on("end", function() {
+    //const updatedData = JSON.parse(dataString);
     const updatedEntry = {
       "firstname": updatedData.firstname,
       "lastname": updatedData.lastname,
@@ -171,11 +157,11 @@ app.post('/update', function(req, res) {
       "Content-Type": "text/plain"
     });
     res.end();
-  })
+  })*/
 });
 
 app.post('/submit', function(req, res) {
-  let dataString = "";
+  /*let dataString = "";
 
   req.on("data", function(data) {
     dataString += data
@@ -189,19 +175,26 @@ app.post('/submit', function(req, res) {
       "lastname": data.lastname,
       "username": data.username,
       "password": data.password
-    }
+    }*/
 
-    db.get('members').push(newMember).write()
+  const newMember = {
+    "firstname": req.body.firstname,
+    "lastname": req.body.lastname,
+    "username": req.body.username,
+    "password": req.body.password
+  };
 
-    res.writeHead(200, "OK", {
-      "Content-Type": "text/plain"
-    });
-    res.end();
-  })
-});
+  db.get('members').push(newMember).write()
+
+  res.writeHead(200, "OK", {
+    "Content-Type": "text/plain"
+  });
+  res.end();
+})
+//});
 
 app.post('/delete', function(req, res) {
-  let dataString = "";
+  /*let dataString = "";
 
   req.on("data", function(data) {
     dataString += data
@@ -217,7 +210,15 @@ app.post('/delete', function(req, res) {
       "Content-Type": "text/plain"
     });
     res.end();
-  })
+  })*/
+  db.get('members').remove({
+    //uuid: entryToDelete.uuid
+    username: req.body.username
+  }).write()
+  res.writeHead(200, "OK", {
+    "Content-Type": "text/plain"
+  });
+  res.end();
 });
 
 app.listen(process.env.PORT || port, function() {

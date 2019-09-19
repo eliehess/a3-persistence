@@ -1,16 +1,10 @@
 {
   "members": [
     {
-      "firstname": "Obi-Wan",
-      "lastname": "Kenobi",
-      "username": "Obi-WanU",
-      "password": "KenobiP"
-    },
-    {
-      "firstname": "Luke",
-      "lastname": "Skywalker",
-      "username": "LukeU",
-      "password": "SkywalkerP"
+      "firstname": "Admin",
+      "lastname": "Admin",
+      "username": "admin",
+      "password": "admin"
     },
     {
       "firstname": "Elie",
@@ -19,10 +13,16 @@
       "password": "pass"
     },
     {
-      "firstname": "Admin",
-      "lastname": "Admin",
-      "username": "admin",
-      "password": "admin"
+      "firstname": "Luke",
+      "lastname": "Skywalker",
+      "username": "LukeU",
+      "password": "SkywalkerP"
+    },
+    {
+      "firstname": "Obi-Wan",
+      "lastname": "Kenobi",
+      "username": "Obi-WanU",
+      "password": "KenobiP"
     }
   ]
 }
