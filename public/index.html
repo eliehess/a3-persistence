@@ -1,20 +1,22 @@
+<!--Watch this, will ya? https://www.youtube.com/watch?v=oqu3i41DmZQ-->
 <!doctype html>
 <html lang="en">
 
 <head>
   <title>Magic: the Gathering Club</title>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="/css/style.css" rel="stylesheet" type="text/css">
+  <link href="/css/tachyons.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
   <h1>WPI Magic: the Gathering Club</h1>
-  <h1 id="loggedin"></h1>
+  <h3 id="loggedin"></h3>
 
   <main>
-    <button id="switchModeButton">View Members</button>
+    <button id="backtologinButton">Log in</button>
     <button id="logoutButton">Log Out</button>
+    <button id="switchModeButton">View Members</button>
 
     <div id="application">
       <h2>Stop! Who would cross the Bridge of Death must answer me these questions <del>three</del> five, 'ere the other side they see.</h2>
@@ -103,12 +105,14 @@
 
     <div id="loginScreen">
       <h2>Please log in</h2>
+      <br>
+      <button id="signupButton">Sign Up</button>
       <form action="">
         <div class="input">
           <label for="usernameLogin" class="label">Username</label>
           <input type="text" id="usernameLogin">
           <label for="passwordLogin" class="label">Password</label>
-          <input type="text" id="passwordLogin">
+          <input type="password" id="passwordLogin">
         </div>
 
         <p id="loginErrorBox">Incorrect username or password</p>
@@ -120,7 +124,7 @@
 </body>
 
 <script>
-  const addMember = function(e) {
+  const addMember = async function(e) {
     e.preventDefault();
 
     if (document.getElementById("password").value !=
@@ -144,6 +148,24 @@
       return false;
     }
     document.getElementById("errorBox").style.display = "none";
+
+    const resp = await fetch("/getdata", {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await resp.json();
+    const memberList = data.data;
+
+    for (let i = 0; i < memberList.length; i++) {
+      const member = memberList[i];
+      if (member.username === newMember.username) {
+        document.getElementById("errorBox").style.display = "block";
+        document.getElementById("errorBox").innerHTML = "That username already exists";
+        return false;
+      }
+    }
 
     const body = JSON.stringify(newMember);
     fetch("/submit", {
@@ -177,8 +199,6 @@
       password: document.getElementById("updatePassword").value
     };
 
-    console.log(updatedMember)
-
     if (updatedMember.firstname === "" || updatedMember.lastname === "" ||
       updatedMember.username === "" || updatedMember.password === "") {
       document.getElementById("updateErrorBox").style.display = "block";
@@ -203,7 +223,6 @@
   const deleteMember = function(index) {
     const member = JSON.parse(decodeURIComponent(document.getElementById(`deleteMemberButton-${index}`).dataset.string));
     const deleteUsername = member.username;
-    console.log("Deleting User: " + deleteUsername);
     const memberDelete = {
       username: deleteUsername
     };
@@ -284,17 +303,18 @@
         'Content-Type': 'application/json'
       }
     }).then(function(response) {
-      if(response.status === 401) {
+      if (response.status === 401) {
         eBox.style.display = "block"
         eBox.innerHTML = "Incorrect username or password"
       } else if (response.status === 200) {
         success(username);
+      } else {
+        console.log("Unexpected response " + response.status);
       }
     })
   };
 
   const success = function(username) {
-    console.log("Logged in as " + username)
     document.getElementById("loggedin").innerHTML = "Logged in as " + username;
     document.getElementById("usernameLogin").innerHTML = "";
     document.getElementById("passwordLogin").innerHTML = "";
@@ -312,6 +332,8 @@
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("logoutButton").style.display = "none";
     document.getElementById("switchModeButton").style.display = "none";
+    document.getElementById("signupButton").style.display = "none";
+    document.getElementById("backtologinButton").style.display = "none";
   };
 
   const clear = function() {
@@ -319,10 +341,18 @@
     document.getElementById("lastname").value = "";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
+    document.getElementById("updatefirstName").value = "";
+    document.getElementById("updatelastName").value = "";
+    document.getElementById("updateUsername").value = "";
+    document.getElementById("updatePassword").value = "";
+    document.getElementById("usernameLogin").value = "";
+    document.getElementById("passwordLogin").value = "";
     return false;
   };
 
   const showLogin = function() {
+    hideAll();
+    clear();
     document.getElementById("loginScreen").style.display = "block";
     document.getElementById("memberTableDiv").style.display = "none";
     document.getElementById("application").style.display = "none";
@@ -332,7 +362,14 @@
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("logoutButton").style.display = "none";
     document.getElementById("loggedin").innerHTML = "";
+    document.getElementById("signupButton").style.display = "block";
   };
+
+  const signup = function() {
+    hideAll();
+    document.getElementById("application").style.display = "block";
+    document.getElementById("backtologinButton").style.display = "block";
+  }
 
   const showApplication = function() {
     document.getElementById("errorBox").style.display = "none";
@@ -404,8 +441,12 @@
     logoutButton.onclick = showLogin;
     const submitLoginButton = document.getElementById("submitLoginButton");
     submitLoginButton.onclick = submitLogin;
+    const signupButton = document.getElementById("signupButton");
+    signupButton.onclick = signup;
+    const backtologinButton = document.getElementById("backtologinButton");
+    backtologinButton.onclick = showLogin;
 
-    switchModeButton.style.display = "none";
+    hideAll();
 
     document.getElementById("application").style.display = "none";
     document.getElementById("updateApplication").style.display = "none";
@@ -416,6 +457,7 @@
     document.getElementById("updateErrorBox").style.display = "none";
     document.getElementById("loginScreen").style.display = "block";
     document.getElementById("loginErrorBox").style.display = "none";
+    signupButton.style.display = "block";
   };
 </script>
 

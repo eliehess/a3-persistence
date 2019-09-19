@@ -1,3 +1,10 @@
+/*
+Created by Elie Hess.
+
+If you're seeing this, do me a favor and watch this video before proceeding with whatever else you were doing.
+
+https://www.youtube.com/watch?v=CQ85sUNBK7w
+*/
 const low = require('lowdb'),
   express = require('express'),
   compression = require('compression'),
@@ -9,8 +16,9 @@ const low = require('lowdb'),
   http = require("http"),
   fs = require("fs"),
   mime = require("mime"),
+  helmet = require("helmet"),
   bodyParser = require('body-parser'),
-  cookieParser = require('cookie-parser'),
+  responseTime = require('response-time'),
   morgan = require('morgan'),
   adapter = new FileSync('db.json'),
   db = low(adapter),
@@ -19,10 +27,11 @@ const low = require('lowdb'),
   port = 3000;
 
 app.use(express.static('public'));
+app.use(helmet());
 app.use(compression());
 app.use(bodyParser.json());
+app.use(responseTime());
 app.use(morgan('tiny'));
-app.use(cookieParser());
 app.use(function(err, req, res, next) {
   console.error(err.stack);
   res.status(500).send('Bad thing happened');
@@ -77,12 +86,8 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 
-app.post('/login', passport.authenticate('local', {
-  failureFlash: true,
-  successFlash: true
-}), function(req, res) {
+app.post('/login', passport.authenticate('local'), function(req, res) {
   console.log('user: ', req.user)
   res.json({
     status: true
@@ -153,4 +158,5 @@ app.post('/delete', function(req, res) {
 
 app.listen(process.env.PORT || port, function() {
   console.log("Server running on port " + port);
+  console.log("Press Ctrl + C to stop");
 });

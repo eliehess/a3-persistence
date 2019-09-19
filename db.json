@@ -2,27 +2,21 @@
   "members": [
     {
       "firstname": "Admin",
-      "lastname": "Admin",
+      "lastname": "istrator",
       "username": "admin",
       "password": "admin"
     },
     {
-      "firstname": "Elie",
-      "lastname": "Hess",
-      "username": "user",
-      "password": "pass"
-    },
-    {
       "firstname": "Luke",
       "lastname": "Skywalker",
-      "username": "LukeU",
-      "password": "SkywalkerP"
+      "username": "May",
+      "password": "the Force be with you"
     },
     {
       "firstname": "Obi-Wan",
       "lastname": "Kenobi",
-      "username": "Obi-WanU",
-      "password": "KenobiP"
+      "username": "I have",
+      "password": "the high ground"
     }
   ]
 }
