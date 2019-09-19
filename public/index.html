@@ -259,7 +259,6 @@
   };
 
   const submitLogin = function() {
-    //console.log("submitLogin")
     const username = document.getElementById("usernameLogin").value;
     const password = document.getElementById("passwordLogin").value;
     const eBox = document.getElementById("loginErrorBox");
@@ -276,7 +275,6 @@
       username: username,
       password: password
     }
-    //console.log("username: " + username + ", password: " + password)
     body = JSON.stringify(loginData)
 
     fetch('/login', {
@@ -293,8 +291,6 @@
         success(username);
       }
     })
-    //}).then(console.log);
-    //return false;
   };
 
   const success = function(username) {
@@ -389,7 +385,6 @@
     document.getElementById("updatefirstName").value = member.firstname;
     document.getElementById("updatelastName").value = member.lastname;
     document.getElementById("updateUsername").value = member.username;
-    //document.getElementById("updatePassword").value = member.password;
     return false;
   };
 
